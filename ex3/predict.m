@@ -7,6 +7,9 @@ function p = predict(Theta1, Theta2, X)
 m = size(X, 1);
 num_labels = size(Theta2, 1);
 
+% Add ones to the X data matrix
+X = [ones(m, 1) X];
+
 % You need to return the following variables correctly 
 p = zeros(size(X, 1), 1);
 
@@ -22,9 +25,13 @@ p = zeros(size(X, 1), 1);
 %
 
 
+A2 = sigmoid(X*Theta1');
+A2 = [ones(m,1),A2];
 
+A3 = sigmoid(A2*Theta2');  
 
-
+[p_max, i_max]=max(A3, [], 2);
+p = i_max;
 
 
 
