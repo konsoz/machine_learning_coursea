@@ -63,16 +63,17 @@ temp = zeros(m,1);
 %               and Theta2_grad from Part 2.
 %
 
+
 % Add ones to the X data matrix
-X = [ones(m, 1) X];
+Xcopy = [ones(m, 1) X];
 % Activate second hidden layer
-A2 = sigmoid(X*Theta1');
+A2 = sigmoid(Xcopy*Theta1');
 A2 = [ones(m,1),A2];
 % Activate output layer
 A3 = sigmoid(A2*Theta2');  
 
 
-
+%%%%%%%%%%%%%%%%%% COST FUNCTION %%%%%%%%%%%%%%%%%%
 for digit = 1:m
     % Recode the labels as vectors
     label = y(digit);
@@ -109,6 +110,46 @@ end
 
 J = (sum(temp(:))/m) + lambda * (Theta1_Total + Theta2_Total) / (2 * m);
 
+
+%%%%%%%%%%%%%%%%%% BACKPROP %%%%%%%%%%%%%%%%%%
+
+% Difference between theta and error
+Diff_1 = zeros(size(Theta1,1),size(Theta1,2));
+Diff_2 = zeros(size(Theta2,1),size(Theta2,2));
+for t = 1:m
+    
+    % Feedforward pass
+    a_1 = [1 X(t,:)];
+    a_2 = sigmoid(a_1*Theta1');
+    a_2 = [1 a_2];
+    a_3 = sigmoid(a_2*Theta2'); 
+    
+    % Recode the labels as vectors
+    label = y(t);
+    y_vector = zeros(num_labels,1);
+    if(label == 10)
+       y_vector(10) = 1; 
+    end
+    y_vector(label) = 1;
+    
+    % Compute "error term" delta for each layer
+    delta_3 = a_3' - y_vector;
+    delta_2 = Theta2' * delta_3 .* sigmoidGradient([1 a_1*Theta1']');
+    
+    % Accumulate the gradient from this example
+    delta_2 = delta_2(2:end);
+    
+    Diff_2 = Diff_2 + delta_3 * a_2;
+    Diff_1 = Diff_1 + delta_2 * a_1;  
+    
+end
+
+% Regularization
+Theta2_grad(:,1:1) = Diff_2(:,1:1) / m;
+Theta2_grad(:,2:end) = (Diff_2(:,2:end) / m) + (lambda/m .* Theta2(:,2:end));
+
+Theta1_grad(:,1:1) = Diff_1(:,1:1) / m;
+Theta1_grad(:,2:end) = (Diff_1(:,2:end) / m) + (lambda/m .* Theta1(:,2:end));
 
 
 
